@@ -66,8 +66,6 @@
       transition: transform 0.1s ease;
     }
     .send-btn:hover { transform: translateY(-1px); }
-    
-    .status-msg { margin-top: 12px; text-align: center; font-size: 13px; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -75,71 +73,26 @@
 <div class="sticky-card">
   <h2>📌 Operations Sticky Note Dispatch</h2>
 
-  <div class="category-group">
-    <button class="cat-btn active" onclick="setCategory('Merchant', this)">Merchant Support</button>
-    <button class="cat-btn" onclick="setCategory('Delivery', this)">Delivery Support</button>
-    <button class="cat-btn" onclick="setCategory('Customer', this)">Customer Support</button>
-  </div>
+  <form action="https://script.google.com/a/macros/ownly.food/s/AKfycbxmdfHweajP2x0qSw3G8BvgtaxlTgKSMVA7Zy9auovyrewFwIXv1bh0U0S8pRU29Q5DFQ/exec" method="POST" id="dispatchForm">
+    <input type="hidden" name="category" id="categoryInput" value="Merchant Support">
+    
+    <div class="category-group">
+      <button type="button" class="cat-btn active" onclick="setCategory('Merchant Support', this)">Merchant Support</button>
+      <button type="button" class="cat-btn" onclick="setCategory('Delivery Support', this)">Delivery Support</button>
+      <button type="button" class="cat-btn" onclick="setCategory('Customer Support', this)">Customer Support</button>
+    </div>
 
-  <textarea id="noteContent" placeholder="Write your sticky note update here..."></textarea>
-  
-  <button class="send-btn" onclick="dispatchNote()" id="submitBtn">🚀 Dispatch Email Update</button>
-  <div class="status-msg" id="status"></div>
+    <textarea name="message" id="noteContent" placeholder="Write your sticky note update here..." required></textarea>
+    
+    <button type="submit" class="send-btn" id="submitBtn">🚀 Dispatch Email Update</button>
+  </form>
 </div>
 
 <script>
-  let selectedCategory = 'Merchant';
-  
-  // DEPLOYED GOOGLE APPS SCRIPT URL
-  const SCRIPT_URL = "https://script.google.com/a/macros/ownly.food/s/AKfycbxmdfHweajP2x0qSw3G8BvgtaxlTgKSMVA7Zy9auovyrewFwIXv1bh0U0S8pRU29Q5DFQ/exec";
-
   function setCategory(cat, btn) {
-    selectedCategory = cat;
+    document.getElementById('categoryInput').value = cat;
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-  }
-
-  function dispatchNote() {
-    const text = document.getElementById('noteContent').value.trim();
-    const statusDiv = document.getElementById('status');
-    const btn = document.getElementById('submitBtn');
-
-    if (!text) {
-      statusDiv.style.color = "#DC2626";
-      statusDiv.innerText = "Please write a message first!";
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "Sending Emails...";
-    statusDiv.style.color = "#4B5563";
-    statusDiv.innerText = "Processing dispatch...";
-
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        category: selectedCategory,
-        message: text
-      })
-    })
-    .then(() => {
-      btn.disabled = false;
-      btn.innerText = "🚀 Dispatch Email Update";
-      statusDiv.style.color = "#059669";
-      statusDiv.innerText = `Dispatch initiated for ${selectedCategory} Support! Check Google Sheet.`;
-      document.getElementById('noteContent').value = "";
-    })
-    .catch(err => {
-      btn.disabled = false;
-      btn.innerText = "🚀 Dispatch Email Update";
-      statusDiv.style.color = "#DC2626";
-      statusDiv.innerText = "Failed to dispatch email.";
-      console.error(err);
-    });
   }
 </script>
 
