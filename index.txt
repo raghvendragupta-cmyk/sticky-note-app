@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ownly Campaign Sticky Notes</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    
+    .sticky-card {
+      background: #fff;
+      width: 480px;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      border-top: 6px solid #FF2E93;
+    }
+    
+    h2 { font-size: 20px; color: #111827; margin-bottom: 20px; text-align: center; }
+    
+    .category-group { display: flex; gap: 8px; margin-bottom: 20px; }
+    .cat-btn {
+      flex: 1;
+      padding: 10px 6px;
+      border: 2px solid #E5E7EB;
+      background: #F9FAFB;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      color: #4B5563;
+      transition: all 0.2s ease;
+    }
+    
+    .cat-btn.active {
+      border-color: #FF2E93;
+      background: #FFF0F5;
+      color: #FF2E93;
+    }
+
+    textarea {
+      width: 100%;
+      height: 130px;
+      padding: 14px;
+      border: 1.5px solid #D1D5DB;
+      border-radius: 10px;
+      resize: none;
+      font-size: 14px;
+      margin-bottom: 18px;
+      outline: none;
+      background: #FAFAFA;
+    }
+    textarea:focus { border-color: #FF2E93; background: #FFF; }
+
+    .send-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #FF2E93, #D9006C);
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    .send-btn:hover { transform: translateY(-1px); }
+    
+    .status-msg { margin-top: 12px; text-align: center; font-size: 13px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="sticky-card">
+  <h2>📌 Operations Sticky Note Dispatch</h2>
+
+  <div class="category-group">
+    <button class="cat-btn active" onclick="setCategory('Merchant', this)">Merchant Support</button>
+    <button class="cat-btn" onclick="setCategory('Delivery', this)">Delivery Support</button>
+    <button class="cat-btn" onclick="setCategory('Customer', this)">Customer Support</button>
+  </div>
+
+  <textarea id="noteContent" placeholder="Write your sticky note update here..."></textarea>
+  
+  <button class="send-btn" onclick="dispatchNote()" id="submitBtn">🚀 Dispatch Email Update</button>
+  <div class="status-msg" id="status"></div>
+</div>
+
+<script>
+  let selectedCategory = 'Merchant';
+  
+  // YOUR DEPLOYED GOOGLE APPS SCRIPT URL
+  const SCRIPT_URL = "https://script.google.com/a/macros/ownly.food/s/AKfycbwpyw1rqAH_xbZffwmPbHvOSTexS47Ns44pMYx-4rVs71wlrwall-XZpYPCprg0-8bHRQ/exec";
+
+  function setCategory(cat, btn) {
+    selectedCategory = cat;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function dispatchNote() {
+    const text = document.getElementById('noteContent').value.trim();
+    const statusDiv = document.getElementById('status');
+    const btn = document.getElementById('submitBtn');
+
+    if (!text) {
+      statusDiv.style.color = "#DC2626";
+      statusDiv.innerText = "Please write a message first!";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Sending Emails...";
+    statusDiv.style.color = "#4B5563";
+    statusDiv.innerText = "Reading spreadsheet & sending...";
+
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        category: selectedCategory,
+        message: text
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = "🚀 Dispatch Email Update";
+      if (data.result === "success") {
+        statusDiv.style.color = "#059669";
+        statusDiv.innerText = `Sent successfully to ${data.count} address(es) in ${selectedCategory}!`;
+        document.getElementById('noteContent').value = "";
+      } else {
+        statusDiv.style.color = "#DC2626";
+        statusDiv.innerText = "Error: " + data.message;
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = "🚀 Dispatch Email Update";
+      statusDiv.style.color = "#DC2626";
+      statusDiv.innerText = "Failed to dispatch email.";
+      console.error(err);
+    });
+  }
+</script>
+
+</body>
+</html>
